@@ -1,14 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import textwrap
 
 class PizzaOrderApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Lukes Pizzaria")
         self.root.configure(bg="#fff8e7")  # soft background color
-
         self.cart = []
-
         self.size_var = tk.StringVar(value="Medium")
         self.crust_var = tk.StringVar(value="Regular")
         self.sauce_var = tk.StringVar(value="Tomato")
@@ -16,6 +15,8 @@ class PizzaOrderApp:
         self.qty_var = tk.IntVar(value=1)
         self.topping_vars = {}
         self.topping_amounts = {}
+
+
 
         self.create_customer_info_frame()
         self.create_pizza_builder_frame()
@@ -49,22 +50,18 @@ class PizzaOrderApp:
         frame.grid(row=1, column=0, padx=10, pady=5, sticky="n")
         frame.grid_columnconfigure(1, weight=1)
 
-
         tk.Label(frame, text="Size:", bg="#e6f7ff", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", padx=5)
         for i, size in enumerate(["Small", "Medium", "Large"]):
             ttk.Radiobutton(frame, text=size, variable=self.size_var, value=size, command=self.update_price).grid(row=0, column=i+1, sticky="w")
-
 
         tk.Label(frame, text="Crust:", bg="#e6f7ff", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", padx=5)
         for i, crust in enumerate(["Thin", "Regular", "Deep Dish"]):
             ttk.Radiobutton(frame, text=crust, variable=self.crust_var, value=crust, command=self.update_price).grid(row=1, column=i+1, sticky="w")
 
-
         tk.Label(frame, text="Sauce:", bg="#e6f7ff", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", padx=5)
         sauces = ["Tomato", "BBQ", "Alfredo", "Garlic Parmesan", "Pesto"]
         for i, sauce in enumerate(sauces):
             ttk.Radiobutton(frame, text=sauce, variable=self.sauce_var, value=sauce, command=self.update_price).grid(row=2, column=i+1, sticky="w")
-
 
         tk.Label(frame, text="Toppings:", bg="#e6f7ff", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", padx=5)
         toppings = [
@@ -88,26 +85,21 @@ class PizzaOrderApp:
             self.topping_vars[topping] = var
             self.topping_amounts[topping] = (amt_var, opt)
 
-
         tk.Label(frame, text="Special Notes:", bg="#e6f7ff", font=("Arial", 10, "bold")).grid(row=14, column=0, sticky="w", padx=5, pady=3)
         self.notes_entry = ttk.Entry(frame, textvariable=self.notes_var, width=35)
         self.notes_entry.grid(row=14, column=1, columnspan=3, sticky="ew", padx=5, pady=3)
-
 
         tk.Label(frame, text="Qty:", bg="#e6f7ff", font=("Arial", 10, "bold")).grid(row=15, column=0, sticky="w", padx=5, pady=3)
         self.qty_spinbox = ttk.Spinbox(frame, from_=1, to=100, textvariable=self.qty_var, width=5, command=self.update_price)
         self.qty_spinbox.grid(row=15, column=1, sticky="w", padx=5, pady=3)
 
-
         self.price_label = tk.Label(frame, text="Price: $0.00", font=("Arial", 12, "bold"), bg="#e6f7ff", fg="#b30000")
         self.price_label.grid(row=16, column=0, columnspan=3, pady=5)
-
 
         add_btn = tk.Button(frame, text="Add Pizza 🍕", bg="#ff9999", fg="white", font=("Arial", 10, "bold"), command=self.add_pizza)
         add_btn.grid(row=17, column=0, columnspan=3, pady=10)
 
         self.update_price()
-
 
         for topping, var in self.topping_vars.items():
             def toggle(var=var, topping=topping):
@@ -122,20 +114,31 @@ class PizzaOrderApp:
 
     def create_cart_frame(self):
         frame = tk.Frame(self.root, bg="#e6ffe6", bd=2, relief="ridge")
-        frame.grid(row=1, column=1, padx=10, pady=5, sticky="n")
+        frame.grid(row=1, column=1, padx=10, pady=5, sticky="nsew")
 
-        self.cart_listbox = tk.Listbox(frame, width=100, height=20)
-        self.cart_listbox.grid(row=0, column=0, columnspan=2, padx=5, pady=5)
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
 
-        self.total_label = tk.Label(frame, text="Total: $0.00", font=("Arial", 12, "bold"), bg="#e6ffe6", fg="#004d00")
+        list_frame = tk.Frame(frame, bg="#e6ffe6")
+        list_frame.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
+
+        scrollbar = tk.Scrollbar(list_frame, orient="vertical")
+        scrollbar.pack(side="right", fill="y")
+
+        self.cart_listbox = tk.Listbox(list_frame, width=100, height=20, yscrollcommand=scrollbar.set)
+        self.cart_listbox.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=self.cart_listbox.yview)
+
+        self.total_label = tk.Label(frame, text="Total: $0.00", font=("Arial", 12, "bold"),
+                                    bg="#e6ffe6", fg="#004d00")
         self.total_label.grid(row=1, column=0, columnspan=2, pady=5)
 
         remove_btn = tk.Button(frame, text="Remove Selected", bg="#b3b3ff", command=self.remove_selected)
         remove_btn.grid(row=2, column=0, pady=5, padx=5)
 
-        checkout_btn = tk.Button(frame, text="Place Order ✅", bg="#66cc66", fg="white", font=("Arial", 10, "bold"), command=self.place_order)
+        checkout_btn = tk.Button(frame, text="Place Order ✅", bg="#66cc66", fg="white",
+                                 font=("Arial", 10, "bold"), command=self.place_order)
         checkout_btn.grid(row=2, column=1, pady=5, padx=5)
-
 
     def calculate_pizza_price(self):
         base_prices = {"Small": 8, "Medium": 10, "Large": 12}
@@ -188,13 +191,16 @@ class PizzaOrderApp:
 
     def update_cart(self):
         self.cart_listbox.delete(0, tk.END)
-        for item in self.cart:
+        for i, item in enumerate(self.cart, start=1):
             toppings = ", ".join(item["toppings"]) if item["toppings"] else "No toppings"
             notes_text = f" [Notes: {item['notes']}]" if item['notes'] else ""
-            self.cart_listbox.insert(
-                tk.END,
-                f'{item["qty"]}x {item["size"]} {item["crust"]} Pizza with {item["sauce"]} Sauce ({toppings}){notes_text} - ${item["price"]:.2f}'
-            )
+            line = (f'{i}. {item["qty"]}x {item["size"]} {item["crust"]} Pizza with '
+                    f'{item["sauce"]} Sauce ({toppings}){notes_text} - ${item["price"]:.2f}')
+
+            wrapped_lines = textwrap.wrap(line, width=90)
+            for j, wl in enumerate(wrapped_lines):
+                prefix = "   " if j > 0 else ""
+                self.cart_listbox.insert(tk.END, prefix + wl)
 
     def update_total(self):
         total = sum(item["price"] for item in self.cart)
@@ -203,7 +209,18 @@ class PizzaOrderApp:
     def remove_selected(self):
         selected = self.cart_listbox.curselection()
         if selected:
-            self.cart.pop(selected[0])
+            # Find which pizza index the selected line belongs to
+            idx = 0
+            line_index = selected[0]
+            for item in self.cart:
+                line = (f'{item["qty"]}x {item["size"]} {item["crust"]} Pizza')
+                wrapped_lines = textwrap.wrap(line, width=90)
+                if line_index < len(wrapped_lines):
+                    break
+                line_index -= len(wrapped_lines)
+                idx += 1
+            if idx < len(self.cart):
+                self.cart.pop(idx)
             self.update_cart()
             self.update_total()
 
@@ -221,7 +238,6 @@ class PizzaOrderApp:
             summary += f'- {item["qty"]}x {item["size"]} {item["crust"]} Pizza with {item["sauce"]} Sauce ({toppings}){notes_text} - ${item["price"]:.2f}\n'
         summary += self.total_label.cget("text")
         messagebox.showinfo("Order Placed", summary)
-
 
         self.cart.clear()
         self.update_cart()
