@@ -6,7 +6,7 @@ class PizzaOrderApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Lukes Pizzaria")
-        self.root.configure(bg="#fff8e7")  # soft background color
+        self.root.configure(bg="#fff8e7")
         self.cart = []
         self.size_var = tk.StringVar(value="Medium")
         self.crust_var = tk.StringVar(value="Regular")
@@ -201,7 +201,7 @@ class PizzaOrderApp:
             for j, wl in enumerate(wrapped_lines):
                 prefix = "   " if j > 0 else ""
                 self.cart_listbox.insert(tk.END, prefix + wl)
-                self.line_to_cart_index.append(i - 1)  # store index
+                self.line_to_cart_index.append(i - 1)
 
     def update_total(self):
         total = sum(item["price"] for item in self.cart)
