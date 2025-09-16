@@ -16,8 +16,6 @@ class PizzaOrderApp:
         self.topping_vars = {}
         self.topping_amounts = {}
 
-
-
         self.create_customer_info_frame()
         self.create_pizza_builder_frame()
         self.create_cart_frame()
@@ -191,6 +189,8 @@ class PizzaOrderApp:
 
     def update_cart(self):
         self.cart_listbox.delete(0, tk.END)
+        self.line_to_cart_index = []  # map each line to a cart index
+
         for i, item in enumerate(self.cart, start=1):
             toppings = ", ".join(item["toppings"]) if item["toppings"] else "No toppings"
             notes_text = f" [Notes: {item['notes']}]" if item['notes'] else ""
@@ -201,6 +201,7 @@ class PizzaOrderApp:
             for j, wl in enumerate(wrapped_lines):
                 prefix = "   " if j > 0 else ""
                 self.cart_listbox.insert(tk.END, prefix + wl)
+                self.line_to_cart_index.append(i - 1)  # store index
 
     def update_total(self):
         total = sum(item["price"] for item in self.cart)
@@ -208,19 +209,13 @@ class PizzaOrderApp:
 
     def remove_selected(self):
         selected = self.cart_listbox.curselection()
-        if selected:
-            # Find which pizza index the selected line belongs to
-            idx = 0
-            line_index = selected[0]
-            for item in self.cart:
-                line = (f'{item["qty"]}x {item["size"]} {item["crust"]} Pizza')
-                wrapped_lines = textwrap.wrap(line, width=90)
-                if line_index < len(wrapped_lines):
-                    break
-                line_index -= len(wrapped_lines)
-                idx += 1
-            if idx < len(self.cart):
-                self.cart.pop(idx)
+        if not selected:
+            return
+
+        line_index = selected[0]
+        if line_index < len(self.line_to_cart_index):
+            cart_index = self.line_to_cart_index[line_index]
+            self.cart.pop(cart_index)
             self.update_cart()
             self.update_total()
 
